@@ -2,22 +2,24 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.db import models
 
+from habits.constans import ERROR_MESSAGES
+from habits.validtors import (validate_enjoyable_habit, validate_periodicity,
+                              validate_related_habit,
+                              validate_reward_and_related, validate_time_limit)
 from users.models import User
 
 
 class Periodicity(models.Model):
     PERIOD_CHOICES = [
-        ('minutes', 'Минуты'),
-        ('hours', 'Часы'),
-        ('days', 'Дни'),
-        ('weeks', 'Недели'),
+        ("minutes", "Минуты"),
+        ("hours", "Часы"),
+        ("days", "Дни"),
+        ("weeks", "Недели"),
     ]
 
     value = models.PositiveIntegerField(verbose_name="Значение периодичности")
     unit = models.CharField(
-        max_length=10,
-        choices=PERIOD_CHOICES,
-        verbose_name="Единица измерения"
+        max_length=10, choices=PERIOD_CHOICES, verbose_name="Единица измерения"
     )
 
     class Meta:
@@ -26,6 +28,7 @@ class Periodicity(models.Model):
 
     def __str__(self):
         return f"Каждые {self.value} {self.unit}"
+
 
 class Habit(models.Model):
 
@@ -46,11 +49,12 @@ class Habit(models.Model):
         verbose_name="Связанная привычка",
     )
     periodicity = models.ForeignKey(
-        'Periodicity',
+        "Periodicity",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name="Периодичность выполнения"
+        default=1,
+        verbose_name="Периодичность выполнения",
     )
     reward = models.CharField(
         max_length=100, blank=True, null=True, verbose_name="Вознаграждение"
@@ -69,19 +73,13 @@ class Habit(models.Model):
         return f"Я буду {self.action} в {self.habit_time} в {self.place}"
 
     def clean(self):
-        if self.reward and self.related_habit:
-            raise ValidationError("Вознаграждение и связанная привычка не могут быть указаны одновременно")
-        if self.time_to_complete > 120:
-            raise ValidationError("Время выполнения должно быть не больше 120 секунд.")
-        if self.related_habit and not self.related_habit.enjoyable_habit:
-            raise ValidationError("В связанные привычки могут попадать только привычки с признаком приятной привычки.")
-        if self.enjoyable_habit and (self.reward or self.related_habit):
-            raise ValidationError("У приятной привычки не может быть вознаграждения или связанной привычки")
+        validate_reward_and_related(self.reward, self.related_habit)
+        validate_time_limit(self.time_to_complete)
+        if self.related_habit:
+            validate_related_habit(self.related_habit)
+        validate_enjoyable_habit(self.enjoyable_habit, self.reward, self.related_habit)
         if self.periodicity:
-            if self.periodicity.unit == 'days' and self.periodicity.value > 7:
-                raise ValidationError("Нельзя выполнять привычку реже, чем 1 раз в 7 дней")
-            elif self.periodicity.unit == 'weeks' and self.periodicity.value > 1:
-                raise ValidationError("Нельзя выполнять привычку реже, чем 1 раз в неделю")
+            validate_periodicity(self.periodicity)
 
     def save(self, *args, **kwargs):
         self.full_clean()

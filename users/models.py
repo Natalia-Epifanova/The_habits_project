@@ -9,7 +9,9 @@ class User(AbstractUser):
     phone = models.CharField(
         max_length=35, blank=True, null=True, verbose_name="Телефон"
     )
-    tg_nickname = models.CharField(max_length=50, blank=True, null=True, verbose_name="Ник в телеграме")
+    tg_nickname = models.CharField(
+        max_length=50, blank=True, null=True, verbose_name="Ник в телеграме"
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
