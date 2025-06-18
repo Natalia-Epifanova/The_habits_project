@@ -3,23 +3,29 @@ from django.core.validators import MaxValueValidator
 from django.db import models
 
 from habits.constans import ERROR_MESSAGES
-from habits.validtors import (validate_enjoyable_habit, validate_periodicity,
-                              validate_related_habit,
-                              validate_reward_and_related, validate_time_limit)
+from habits.validtors import (
+    validate_enjoyable_habit,
+    validate_periodicity,
+    validate_related_habit,
+    validate_reward_and_related,
+    validate_time_limit,
+)
 from users.models import User
 
 
 class Periodicity(models.Model):
     PERIOD_CHOICES = [
-        ("minutes", "Минуты"),
-        ("hours", "Часы"),
-        ("days", "Дни"),
-        ("weeks", "Недели"),
+        ("minutes", "минута/минуты/минут"),
+        ("hours", "час/часа/часов"),
+        ("days", "день/дня/дней"),
+        ("week", "неделя/недели/недель"),
     ]
 
     value = models.PositiveIntegerField(verbose_name="Значение периодичности")
     unit = models.CharField(
-        max_length=10, choices=PERIOD_CHOICES, verbose_name="Единица измерения"
+        max_length=10,
+        choices=PERIOD_CHOICES,
+        verbose_name="Единица измерения"
     )
 
     class Meta:
@@ -27,8 +33,26 @@ class Periodicity(models.Model):
         verbose_name_plural = "Периодичности"
 
     def __str__(self):
-        return f"Каждые {self.value} {self.unit}"
+        if self.value == 1:
+            if self.unit == "days":
+                return "Ежедневно"
+            elif self.unit == "week":
+                return "Еженедельно"
+            elif self.unit == "hours":
+                return "Ежечасно"
+            elif self.unit == "minutes":
+                return "Ежеминутно"
+            return f"Каждую {self.get_unit_display().split('/')[0]}"
 
+        unit_parts = self.get_unit_display().split('/')
+        if self.value % 10 == 1 and self.value % 100 != 11:
+            unit = unit_parts[0]
+        elif 2 <= self.value % 10 <= 4 and (self.value % 100 < 10 or self.value % 100 >= 20):
+            unit = unit_parts[1]
+        else:
+            unit = unit_parts[2]
+
+        return f"Каждые {self.value} {unit}"
 
 class Habit(models.Model):
 

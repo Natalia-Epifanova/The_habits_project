@@ -1,11 +1,16 @@
 from django.shortcuts import render
-from rest_framework.generics import (CreateAPIView, DestroyAPIView,
-                                     ListAPIView, RetrieveAPIView,
-                                     UpdateAPIView)
+from rest_framework.generics import (
+    CreateAPIView,
+    DestroyAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    UpdateAPIView,
+)
+from rest_framework.viewsets import ModelViewSet
 
-from habits.models import Habit
+from habits.models import Habit, Periodicity
 from habits.paginations import CustomPagination
-from habits.serializers import HabitSerializer
+from habits.serializers import HabitSerializer, PeriodicitySerializer
 
 
 class HabitCreateApiView(CreateAPIView):
@@ -14,9 +19,6 @@ class HabitCreateApiView(CreateAPIView):
     queryset = Habit.objects.all()
     serializer_class = HabitSerializer
 
-    def perform_create(self, serializer):
-        habit = serializer.save(creator=self.request.user)
-        habit.save()
 
 
 class HabitUpdateApiView(UpdateAPIView):
@@ -65,3 +67,10 @@ class HabitPublicListApiView(ListAPIView):
     queryset = Habit.objects.filter(publicity=True)
     serializer_class = HabitSerializer
     pagination_class = CustomPagination
+
+
+class PeriodicityViewSet(ModelViewSet):
+    """ViewSet для работы с периодичностью"""
+
+    queryset = Periodicity.objects.all()
+    serializer_class = PeriodicitySerializer

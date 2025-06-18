@@ -5,6 +5,9 @@ from habits.models import Habit, Periodicity
 
 
 class HabitSerializer(serializers.ModelSerializer):
+    creator = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    periodicity = serializers.CharField(source='periodicity.__str__', read_only=True)
+
     class Meta:
         model = Habit
         fields = "__all__"
@@ -36,3 +39,14 @@ class HabitSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(ERROR_MESSAGES[5])
 
         return data
+
+
+class PeriodicitySerializer(serializers.ModelSerializer):
+    display_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Periodicity
+        fields = "__all__"
+
+    def get_display_name(self, obj):
+        return str(obj)
