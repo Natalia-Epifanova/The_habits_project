@@ -4,16 +4,15 @@ from django.db import migrations
 
 
 def set_default_periodicity(apps, schema_editor):
-    Periodicity = apps.get_model('habits', 'Periodicity')
-    Habit = apps.get_model('habits', 'Habit')
+    Periodicity = apps.get_model("habits", "Periodicity")
+    Habit = apps.get_model("habits", "Habit")
 
     daily, created = Periodicity.objects.get_or_create(
-        value=1,
-        unit='days',
-        defaults={'value': 1, 'unit': 'days'}
+        value=1, unit="days", defaults={"value": 1, "unit": "days"}
     )
 
     Habit.objects.filter(periodicity__isnull=True).update(periodicity=daily)
+
 
 class Migration(migrations.Migration):
 

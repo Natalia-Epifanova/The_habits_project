@@ -6,7 +6,7 @@ from habits.models import Habit, Periodicity
 
 class HabitSerializer(serializers.ModelSerializer):
     creator = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    periodicity = serializers.CharField(source='periodicity.__str__', read_only=True)
+    periodicity = serializers.CharField(source="periodicity.__str__", read_only=True)
 
     class Meta:
         model = Habit

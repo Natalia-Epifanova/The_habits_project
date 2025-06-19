@@ -1,11 +1,7 @@
 from django.shortcuts import render
-from rest_framework.generics import (
-    CreateAPIView,
-    DestroyAPIView,
-    ListAPIView,
-    RetrieveAPIView,
-    UpdateAPIView,
-)
+from rest_framework.generics import (CreateAPIView, DestroyAPIView,
+                                     ListAPIView, RetrieveAPIView,
+                                     UpdateAPIView)
 from rest_framework.viewsets import ModelViewSet
 
 from habits.models import Habit, Periodicity
@@ -18,7 +14,6 @@ class HabitCreateApiView(CreateAPIView):
 
     queryset = Habit.objects.all()
     serializer_class = HabitSerializer
-
 
 
 class HabitUpdateApiView(UpdateAPIView):
