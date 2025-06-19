@@ -1,15 +1,25 @@
-from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.db import models
 
-from habits.constans import ERROR_MESSAGES
-from habits.validtors import (validate_enjoyable_habit, validate_periodicity,
-                              validate_related_habit,
-                              validate_reward_and_related, validate_time_limit)
+from habits.validators import (
+    validate_enjoyable_habit,
+    validate_periodicity,
+    validate_related_habit,
+    validate_reward_and_related,
+    validate_time_limit,
+)
 from users.models import User
 
 
 class Periodicity(models.Model):
+    """
+    Модель периодичности выполнения привычки.
+
+    Attributes:
+        value (PositiveIntegerField): Числовое значение периодичности
+        unit (CharField): Единица измерения периодичности (минуты/часы/дни/недели)
+    """
+
     PERIOD_CHOICES = [
         ("minutes", "минута/минуты/минут"),
         ("hours", "час/часа/часов"),
@@ -27,6 +37,12 @@ class Periodicity(models.Model):
         verbose_name_plural = "Периодичности"
 
     def __str__(self):
+        """
+        Возвращает строковое представление периодичности с правильным склонением.
+
+        Returns:
+            str: Описание периодичности с правильным склонением (например, "Каждые 2 дня")
+        """
         if self.value == 1:
             if self.unit == "days":
                 return "Ежедневно"
@@ -52,6 +68,21 @@ class Periodicity(models.Model):
 
 
 class Habit(models.Model):
+    """
+    Модель привычки пользователя.
+
+    Attributes:
+        creator (ForeignKey): Создатель привычки (связь с User)
+        place (CharField): Место выполнения привычки
+        habit_time (TimeField): Время выполнения привычки
+        action (CharField): Действие, представляющее привычку
+        enjoyable_habit (BooleanField): Признак приятной привычки
+        related_habit (ForeignKey): Связанная привычка (связь с Habit)
+        periodicity (ForeignKey): Периодичность выполнения (связь с Periodicity)
+        reward (CharField): Вознаграждение за выполнение
+        time_to_complete (PositiveIntegerField): Время на выполнение (в секундах)
+        publicity (BooleanField): Признак публичности привычки
+    """
 
     creator = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name="Создатель"
@@ -91,9 +122,20 @@ class Habit(models.Model):
         verbose_name_plural = "Привычки"
 
     def __str__(self):
+        """Строковое представление привычки."""
         return f"Я буду {self.action} в {self.habit_time} в {self.place}"
 
     def clean(self):
+        """
+        Валидация модели перед сохранением.
+
+        Проверяет:
+        - Взаимоисключение вознаграждения и связанной привычки
+        - Ограничение времени выполнения
+        - Корректность связанной привычки
+        - Корректность приятной привычки
+        - Валидность периодичности
+        """
         validate_reward_and_related(self.reward, self.related_habit)
         validate_time_limit(self.time_to_complete)
         if self.related_habit:
@@ -103,5 +145,8 @@ class Habit(models.Model):
             validate_periodicity(self.periodicity)
 
     def save(self, *args, **kwargs):
+        """
+        Переопределение метода сохранения с предварительной валидацией.
+        """
         self.full_clean()
         super().save(*args, **kwargs)

@@ -4,7 +4,16 @@ from config.settings import BOT_TOKEN, TELEGRAM_URL
 
 
 def send_telegram_message(chat_id, message):
-    """Синхронная отправка сообщения в Telegram"""
+    """
+    Отправляет сообщение в Telegram через API.
+
+    Args:
+        chat_id (str): ID чата в Telegram
+        message (str): Текст сообщения
+
+    Returns:
+        dict: Ответ от Telegram API или None в случае ошибки
+    """
     params = {
         "text": message,
         "chat_id": chat_id,

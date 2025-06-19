@@ -3,6 +3,16 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """
+    Кастомная модель пользователя на основе AbstractUser.
+    Использует email в качестве основного идентификатора вместо username.
+
+    Attributes:
+        email (EmailField): Уникальный email пользователя (используется для входа)
+        phone (CharField): Номер телефона (необязательный)
+        tg_chat_id (CharField): ID чата в Telegram для уведомлений (необязательный)
+    """
+
     username = None
 
     email = models.EmailField(unique=True, verbose_name="Email")
@@ -21,4 +31,5 @@ class User(AbstractUser):
         verbose_name_plural = "Пользователи"
 
     def __str__(self):
+        """Строковое представление пользователя (email)."""
         return self.email

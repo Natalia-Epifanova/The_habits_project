@@ -6,11 +6,15 @@ from habits.models import Habit, Periodicity
 
 @admin.register(Periodicity)
 class PeriodicityAdmin(ModelAdmin):
+    """Административный интерфейс для модели Periodicity."""
+
     list_filter = ("id", "value", "unit")
 
 
 @admin.register(Habit)
 class HabitAdmin(ModelAdmin):
+    """Административный интерфейс для модели Habit."""
+
     list_filter = (
         "creator",
         "place",

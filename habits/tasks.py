@@ -7,12 +7,24 @@ from habits.services import send_telegram_message  # Импорт сервисн
 
 @shared_task
 def check_habits_and_send_reminders():
-    """Асинхронная задача для проверки и отправки напоминаний"""
+    """
+    Периодическая задача для проверки и отправки напоминаний о привычках.
+
+    Проверяет привычки, которые должны быть выполнены в текущее время,
+    и отправляет уведомления в Telegram.
+
+    Логика:
+    1. Получает текущее время (с учетом часового пояса)
+    2. Находит привычки, запланированные на это время
+    3. Для каждой привычки отправляет напоминание в Telegram
+    """
     now = timezone.now()
     current_time = now.time()
 
     habits = Habit.objects.filter(
-        habit_time__hour=current_time.hour, habit_time__minute=current_time.minute
+        habit_time__hour=current_time.hour + 3,
+        habit_time__minute=current_time.minute,
+        creator__isnull=False,
     )
 
     for habit in habits:
