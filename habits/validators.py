@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from habits.constans import ERROR_MESSAGES
@@ -43,7 +44,7 @@ def validate_related_habit(related_habit):
         ValidationError: Если связанная привычка не является приятной
     """
     if related_habit and not related_habit.enjoyable_habit:
-        raise serializers.ValidationError(ERROR_MESSAGES[2])
+        raise ValidationError(ERROR_MESSAGES[2])
 
 
 def validate_enjoyable_habit(enjoyable, reward, related_habit):
@@ -62,19 +63,40 @@ def validate_enjoyable_habit(enjoyable, reward, related_habit):
         raise serializers.ValidationError(ERROR_MESSAGES[3])
 
 
-def validate_periodicity(periodicity):
+def validate_periodicity_object(periodicity):
     """
-    Проверяет допустимые значения периодичности выполнения привычки.
-    За одну неделю необходимо выполнить привычку хотя бы один раз.
+    Проверяет корректность объекта Periodicity.
 
     Args:
         periodicity (Periodicity): Объект периодичности
 
     Raises:
-        ValidationError: Если периодичность не соответствует требованиям
+        ValidationError: Если значение value превышает допустимый максимум для unit
+            - для "days" больше 7
+            - для "week" больше 1
     """
-    if periodicity:
-        if periodicity.unit == "days" and periodicity.value > 7:
-            raise serializers.ValidationError(ERROR_MESSAGES[4])
-        elif periodicity.unit == "weeks" and periodicity.value > 1:
-            raise serializers.ValidationError(ERROR_MESSAGES[5])
+    if periodicity.unit == "days" and periodicity.value > 7:
+        raise ValidationError(ERROR_MESSAGES[4])
+    elif periodicity.unit == "week" and periodicity.value > 1:
+        raise ValidationError(ERROR_MESSAGES[5])
+
+
+def validate_periodicity_data(data):
+    """
+    Проверяет корректность данных периодичности из сериализатора.
+
+    Args:
+        data (dict): Словарь с ключами 'value' и 'unit'
+
+    Raises:
+        ValidationError: Если значение value превышает допустимый максимум для unit
+            - для "days" больше 7
+            - для "week" больше 1
+    """
+    unit = data.get("unit")
+    value = data.get("value")
+
+    if unit == "days" and value > 7:
+        raise serializers.ValidationError(ERROR_MESSAGES[4])
+    elif unit == "week" and value > 1:
+        raise serializers.ValidationError(ERROR_MESSAGES[5])

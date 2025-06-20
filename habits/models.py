@@ -1,13 +1,10 @@
-from django.core.validators import MaxValueValidator
 from django.db import models
 
-from habits.validators import (
-    validate_enjoyable_habit,
-    validate_periodicity,
-    validate_related_habit,
-    validate_reward_and_related,
-    validate_time_limit,
-)
+from habits.validators import (validate_enjoyable_habit,
+                               validate_periodicity_object,
+                               validate_related_habit,
+                               validate_reward_and_related,
+                               validate_time_limit)
 from users.models import User
 
 
@@ -52,7 +49,6 @@ class Periodicity(models.Model):
                 return "Ежечасно"
             elif self.unit == "minutes":
                 return "Ежеминутно"
-            return f"Каждую {self.get_unit_display().split('/')[0]}"
 
         unit_parts = self.get_unit_display().split("/")
         if self.value % 10 == 1 and self.value % 100 != 11:
@@ -65,6 +61,15 @@ class Periodicity(models.Model):
             unit = unit_parts[2]
 
         return f"Каждые {self.value} {unit}"
+
+    def clean(self):
+        """Валидация модели"""
+        validate_periodicity_object(self)
+
+    def save(self, *args, **kwargs):
+        """Сохранение с валидацией"""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Habit(models.Model):
@@ -112,7 +117,6 @@ class Habit(models.Model):
         max_length=100, blank=True, null=True, verbose_name="Вознаграждение"
     )
     time_to_complete = models.PositiveIntegerField(
-        validators=[MaxValueValidator(120)],
         verbose_name="Время на выполнение (в секундах)",
     )
     publicity = models.BooleanField(default=False, verbose_name="Признак публичности")
@@ -120,6 +124,7 @@ class Habit(models.Model):
     class Meta:
         verbose_name = "Привычка"
         verbose_name_plural = "Привычки"
+        ordering = ["id"]
 
     def __str__(self):
         """Строковое представление привычки."""
@@ -141,8 +146,6 @@ class Habit(models.Model):
         if self.related_habit:
             validate_related_habit(self.related_habit)
         validate_enjoyable_habit(self.enjoyable_habit, self.reward, self.related_habit)
-        if self.periodicity:
-            validate_periodicity(self.periodicity)
 
     def save(self, *args, **kwargs):
         """

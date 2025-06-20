@@ -1,13 +1,12 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from habits.models import Habit, Periodicity
-from habits.validators import (
-    validate_enjoyable_habit,
-    validate_periodicity,
-    validate_related_habit,
-    validate_reward_and_related,
-    validate_time_limit,
-)
+from habits.validators import (validate_enjoyable_habit,
+                               validate_periodicity_data,
+                               validate_related_habit,
+                               validate_reward_and_related,
+                               validate_time_limit)
 
 
 class HabitSerializer(serializers.ModelSerializer):
@@ -16,11 +15,19 @@ class HabitSerializer(serializers.ModelSerializer):
 
     Attributes:
         creator (HiddenField): Автоматически устанавливает текущего пользователя как создателя
-        periodicity (CharField): Строковое представление периодичности (только для чтения)
+        periodicity_display (CharField): Строковое представление периодичности (только для чтения)
     """
 
+    related_habit = serializers.PrimaryKeyRelatedField(
+        queryset=Habit.objects.all(), allow_null=True, required=False
+    )
     creator = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    periodicity = serializers.CharField(source="periodicity.__str__", read_only=True)
+    periodicity = serializers.PrimaryKeyRelatedField(
+        queryset=Periodicity.objects.all(), allow_null=True, required=False
+    )
+    periodicity_display = serializers.CharField(
+        source="periodicity.__str__", read_only=True
+    )
 
     class Meta:
         model = Habit
@@ -40,24 +47,17 @@ class HabitSerializer(serializers.ModelSerializer):
             ValidationError: Если данные не проходят валидацию
         """
         reward = data.get("reward")
-        related_habit_id = data.get("related_habit")
+        related_habit = data.get("related_habit")
         enjoyable = data.get("enjoyable_habit")
         time_to_complete = data.get("time_to_complete", 0)
-        periodicity_id = data.get("periodicity")
-
-        related_habit = None
-        if related_habit_id:
-            related_habit = Habit.objects.get(pk=related_habit_id)
-
-        periodicity = None
-        if periodicity_id:
-            periodicity = Periodicity.objects.get(pk=periodicity_id)
 
         validate_reward_and_related(reward, related_habit)
         validate_time_limit(time_to_complete)
-        validate_related_habit(related_habit)
+        try:
+            validate_related_habit(related_habit)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
         validate_enjoyable_habit(enjoyable, reward, related_habit)
-        validate_periodicity(periodicity)
 
         return data
 
@@ -75,6 +75,11 @@ class PeriodicitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Periodicity
         fields = "__all__"
+
+    def validate(self, data):
+        """Валидация данных в сериализаторе"""
+        validate_periodicity_data(data)
+        return data
 
     @staticmethod
     def get_display_name(obj):
