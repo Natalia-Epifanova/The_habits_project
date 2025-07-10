@@ -13,7 +13,13 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '89.169.190.54',
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    'backend'
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -63,12 +69,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("DATABASE_NAME"),
         "USER": os.getenv("DATABASE_USER"),
         "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-        "HOST": os.getenv("DATABASE_HOST"),
-        "PORT": os.getenv("DATABASE_PORT", default="5432"),
+        "HOST": os.getenv("DATABASE_HOST", "db"),
+        "PORT": os.getenv("DATABASE_PORT", "5432"),
     }
 }
 
@@ -104,7 +110,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -141,3 +146,7 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*"),
     },
 }
+
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
