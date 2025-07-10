@@ -2,11 +2,13 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from habits.models import Habit, Periodicity
-from habits.validators import (validate_enjoyable_habit,
-                               validate_periodicity_data,
-                               validate_related_habit,
-                               validate_reward_and_related,
-                               validate_time_limit)
+from habits.validators import (
+    validate_enjoyable_habit,
+    validate_periodicity_data,
+    validate_related_habit,
+    validate_reward_and_related,
+    validate_time_limit,
+)
 
 
 class HabitSerializer(serializers.ModelSerializer):
