@@ -68,7 +68,46 @@
 - Celery (для периодических задач)
 - PostgreSQL (рекомендуемая СУБД)
 - Telegram Bot API
+- Nginx
+- Docker
+- GitHub Actions
 
+## Локальный запуск с Docker
+
+1. Убедитесь, что установлены Docker и Docker Compose
+2. Создайте файл `.env` в корне проекта на основе `.env.example`
+3. Запустите сервисы:
+```bash docker-compose up -d --build ```
+При первом запуске выполните миграции:
+```bash docker-compose exec backend python manage.py migrate```
+
+Приложение будет доступно на http://localhost:8000
+
+## Настройка сервера для деплоя
+
+### Установите на сервер:
+- Docker
+- Docker Compose
+- Настройте SSH-доступ
+- Добавьте секреты в GitHub Actions:
+1. DOCKER_HUB_USERNAME - логин Docker Hub
+2. DOCKER_HUB_ACCESS_TOKEN - токен Docker Hub
+3. SERVER_SSH_KEY - приватный ключ для доступа к серверу
+4. SSH_USER - пользователь сервера
+5. SERVER_IP - IP сервера
+6. SECRET_KEY - секретный ключ Django
+7. BOT_TOKEN - токен для телеграм бота
+
+### CI/CD Pipeline
+Процесс автоматизирован:
+- При push в репозиторий запускается workflow:
+- Проверка кода flake8
+- Запуск тестов
+- Сборка и публикация Docker-образов
+- Деплой на сервер (автоматический перезапуск контейнеров)
+
+### Адрес сервера
+http://89.169.190.54/habits/
 
 ## Тестирование
 Проект покрыт тестами на 99%. Для запуска тестов:
