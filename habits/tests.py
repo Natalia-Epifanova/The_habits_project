@@ -8,8 +8,12 @@ from rest_framework.test import APITestCase
 from habits.constans import ERROR_MESSAGES
 from habits.models import Habit, Periodicity
 from habits.validators import validate_periodicity_object
-from habits.views import (HabitDeleteApiView, HabitListApiView,
-                          HabitRetrieveApiView, HabitUpdateApiView)
+from habits.views import (
+    HabitDeleteApiView,
+    HabitListApiView,
+    HabitRetrieveApiView,
+    HabitUpdateApiView,
+)
 from users.models import User
 
 
