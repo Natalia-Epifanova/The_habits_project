@@ -1,10 +1,12 @@
 from django.db import models
 
-from habits.validators import (validate_enjoyable_habit,
-                               validate_periodicity_object,
-                               validate_related_habit,
-                               validate_reward_and_related,
-                               validate_time_limit)
+from habits.validators import (
+    validate_enjoyable_habit,
+    validate_periodicity_object,
+    validate_related_habit,
+    validate_reward_and_related,
+    validate_time_limit,
+)
 from users.models import User
 
 

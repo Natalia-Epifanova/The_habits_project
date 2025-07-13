@@ -5,8 +5,26 @@ on: [push]
 env:
   DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
 jobs:
+  lint:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Check out code
+          uses: actions/checkout@v3
+
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.12'
+
+        - name: Install flake8
+          run: pip install flake8
+
+        - name: Run flake8
+          run: flake8 .
+
 
   test:
+    needs: lint
     runs-on: ubuntu-latest
 
     services:
@@ -42,7 +60,7 @@ jobs:
           DATABASE_HOST: localhost
           DATABASE_PORT: 5432
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: python manage.py test
 
   build:
@@ -79,13 +97,13 @@ jobs:
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}  # Используем ключ из Secrets
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Test SSH connection
-        run: ssh -T git@github.com || true  # Проверка подключения
+        run: ssh -T git@github.com || true
 
       - name: Deploy to server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "     
-          cd ~/myproject && docker-compose down && docker-compose up -d --build 
+          cd ~/The_habits_project && docker-compose down && docker-compose up -d --build 
           "

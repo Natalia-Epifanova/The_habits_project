@@ -13,13 +13,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    '89.169.190.54',
-    'localhost',
-    '127.0.0.1',
-    '0.0.0.0',
-    'backend'
-]
+ALLOWED_HOSTS = ["89.169.190.54", "localhost", "127.0.0.1", "0.0.0.0", "backend"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -147,6 +141,6 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
